@@ -597,15 +597,19 @@ def score_answer(puzzle: dict, answer: dict[str, list[str]]) -> tuple[float, str
     Score an answer against the puzzle solution.
     Returns (reward, feedback_message).
     reward is 1.0 for fully correct, 0.0 otherwise.
+    Category keys and values are matched case-insensitively.
     """
     solution = puzzle["solution"]
 
+    # Normalize answer keys to lowercase for case-insensitive matching
+    answer_lower = {k.lower(): v for k, v in answer.items()}
+
     # Check all categories are present
-    missing = set(solution.keys()) - set(answer.keys())
+    missing = set(solution.keys()) - set(answer_lower.keys())
     if missing:
         return 0.0, f"Missing categories in answer: {missing}"
 
-    extra = set(answer.keys()) - set(solution.keys())
+    extra = set(answer_lower.keys()) - set(solution.keys())
     if extra:
         return 0.0, f"Extra categories in answer: {extra}"
 
@@ -614,16 +618,14 @@ def score_answer(puzzle: dict, answer: dict[str, list[str]]) -> tuple[float, str
     n_total = 0
     errors = []
     for cat in solution:
-        if cat not in answer:
-            continue
-        ans_vals = answer[cat]
+        ans_vals = answer_lower[cat]
         sol_vals = solution[cat]
         if len(ans_vals) != len(sol_vals):
             errors.append(f"{cat}: expected {len(sol_vals)} values, got {len(ans_vals)}")
             continue
         for i, (a, s) in enumerate(zip(ans_vals, sol_vals)):
             n_total += 1
-            if a == s:
+            if a.strip().lower() == s.lower():
                 n_correct += 1
 
     if n_total == 0:
