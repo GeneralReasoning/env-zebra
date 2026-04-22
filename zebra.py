@@ -7,8 +7,8 @@ Generates Einstein/zebra-style logic grid puzzles where:
 - There is exactly one valid solution
 
 Difficulty is controlled by:
-- Number of houses (3-6)
-- Number of categories (3-6)
+- Number of houses (3-8)
+- Number of categories (3-8)
 - Clue density (fewer clues = harder)
 """
 
@@ -17,16 +17,20 @@ from dataclasses import dataclass, field
 from itertools import permutations
 
 
-# Category value pools - enough for up to 6 houses per category
+# Category value pools - enough for up to 8 houses per category
 CATEGORY_POOLS = {
-    "nationality": ["Norwegian", "Brit", "Swede", "Dane", "German", "Japanese"],
-    "color": ["Red", "Green", "Blue", "Yellow", "White", "Ivory"],
-    "drink": ["Water", "Tea", "Coffee", "Milk", "Juice", "Soda"],
-    "pet": ["Dog", "Cat", "Bird", "Fish", "Horse", "Turtle"],
-    "hobby": ["Reading", "Painting", "Cooking", "Gardening", "Chess", "Music"],
-    "food": ["Pizza", "Sushi", "Pasta", "Tacos", "Burger", "Salad"],
-    "transport": ["Car", "Bike", "Bus", "Train", "Walk", "Scooter"],
-    "music": ["Jazz", "Rock", "Classical", "Pop", "Blues", "Country"],
+    "nationality": ["Norwegian", "Brit", "Swede", "Dane", "German", "Japanese", "Italian", "Spaniard"],
+    "color": ["Red", "Green", "Blue", "Yellow", "White", "Ivory", "Orange", "Purple"],
+    "drink": ["Water", "Tea", "Coffee", "Milk", "Juice", "Soda", "Wine", "Cocoa"],
+    "pet": ["Dog", "Cat", "Bird", "Fish", "Horse", "Turtle", "Rabbit", "Hamster"],
+    "hobby": ["Reading", "Painting", "Cooking", "Gardening", "Chess", "Music", "Dancing", "Knitting"],
+    "food": ["Pizza", "Sushi", "Pasta", "Tacos", "Burger", "Salad", "Steak", "Soup"],
+    "transport": ["Car", "Bike", "Bus", "Train", "Walk", "Scooter", "Subway", "Boat"],
+    "music": ["Jazz", "Rock", "Classical", "Pop", "Blues", "Country", "Reggae", "Metal"],
+    "flower": ["Rose", "Lily", "Tulip", "Daisy", "Orchid", "Sunflower", "Violet", "Iris"],
+    "tree": ["Oak", "Pine", "Maple", "Birch", "Willow", "Cedar", "Elm", "Ash"],
+    "sport": ["Soccer", "Tennis", "Baseball", "Swimming", "Golf", "Rugby", "Hockey", "Cricket"],
+    "job": ["Doctor", "Teacher", "Engineer", "Artist", "Chef", "Lawyer", "Pilot", "Nurse"],
 }
 
 ALL_CATEGORIES = list(CATEGORY_POOLS.keys())
@@ -437,6 +441,11 @@ DIFFICULTY_CONFIGS = [
     (5, 6, "very_hard"),
     (6, 5, "very_hard"),
     (6, 6, "very_hard"),
+    (7, 5, "extreme"),
+    (7, 6, "extreme"),
+    (7, 7, "extreme"),
+    (8, 6, "extreme"),
+    (8, 7, "extreme"),
 ]
 
 
@@ -495,7 +504,8 @@ def _generate_clue_set(
     seen_signatures: set[str] = set()
     candidate_pool: list[Clue] = []
 
-    for _ in range(500):
+    n_attempts = max(500, n_houses * len(categories) * 50)
+    for _ in range(n_attempts):
         gen = rng.choice(CLUE_GENERATORS)
         clue = gen(solution, categories, n_houses, rng)
         if clue is not None:
